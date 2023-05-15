@@ -752,10 +752,10 @@ class INFONCE(LGN):
 
         numerator = torch.exp(pos_ratings / self.tau)
 
-        # denominator = numerator + torch.sum(torch.exp(neg_ratings / self.tau), dim = 1) # ssm
+        denominator = numerator + torch.sum(torch.exp(neg_ratings / self.tau), dim = 1) # ssm
         # denominator = numerator + 64*torch.sum(torch.exp(neg_ratings / self.tau), dim = 1) # ssm+K
-        rand_weight = torch.rand(self.batch_size, self.neg_sample).cuda(self.device)
-        denominator = numerator + 128*torch.sum(torch.exp(neg_ratings / self.tau)*rand_weight, dim = 1) # ssm+K+rand
+        # rand_weight = torch.rand(self.batch_size, self.neg_sample).cuda(self.device)
+        # denominator = numerator + 128*torch.sum(torch.exp(neg_ratings / self.tau)*rand_weight, dim = 1) # ssm+K+rand
         
         ssm_loss = torch.mean(torch.negative(torch.log(numerator/denominator)))
 
