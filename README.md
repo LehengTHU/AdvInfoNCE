@@ -1,4 +1,4 @@
-# BC-Loss
+# AdvInfoNCE
 
 
 ## Overview
