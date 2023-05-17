@@ -423,7 +423,7 @@ if __name__ == '__main__':
                     model.train()
 
                     mf_loss, reg_loss, reg_loss_prob, eta_u_, p_negative = model(users, pos_items, neg_items)
-                    loss = reg_loss_prob + mf_loss
+                    loss = reg_loss_prob - mf_loss
                     
                     for u, kl_ds_ in eta_u_.items():
                         if u in eta_u.keys():
