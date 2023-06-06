@@ -18,8 +18,6 @@ python setup.py build_ext --inplace
 
 ### LightGCN backbone
 
-For models with LightGCN as backbone, use models with in-batch negative sampling strategy. For example:
-
 - AdvInfoNCE Training:
 
 Tencent:
