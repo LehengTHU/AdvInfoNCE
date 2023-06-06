@@ -17,7 +17,7 @@ import collections
 import os
 from data import Data
 from parse import parse_args
-from model import AdvDRO
+from model import AdvInfoNCE
 from torch.utils.data import Dataset, DataLoader
 from collect_log import read_log
 import torch.nn.functional as F
@@ -241,7 +241,7 @@ if __name__ == '__main__':
     saveID = args.saveID
 
     saveID += str(args.dsc)
-    saveID += "_AdvDRO_" + str(args.model_version) + '_' + str(args.adv_version) + '_' + str(args.dataset) + '_tau_' + str(args.tau) + '_n_layers_' + str(args.n_layers) + '_lr_' + str(args.lr) + '_i_' + str(args.adv_interval) + '_ae_' + str(args.adv_epochs) + '_al_' + str(args.adv_lr) + '_w_' + str(args.warm_up_epochs) + '_eta_' + str(args.eta_epochs) + '_batch_' + str(args.batch_size) + '_neg_' + str(args.neg_sample) + '_patience_' + str(args.patience) + '_k_neg_' + str(args.k_neg)
+    saveID += "_AdvInfoNCE_" + str(args.model_version) + '_' + str(args.dataset) + '_tau_' + str(args.tau) + '_n_layers_' + str(args.n_layers) + '_lr_' + str(args.lr) + '_i_' + str(args.adv_interval) + '_ae_' + str(args.adv_epochs) + '_al_' + str(args.adv_lr) + '_w_' + str(args.warm_up_epochs) + '_eta_' + str(args.eta_epochs) + '_batch_' + str(args.batch_size) + '_neg_' + str(args.neg_sample) + '_patience_' + str(args.patience) + '_k_neg_' + str(args.k_neg)
 
     #@ 保存的目录
     # saveID += str(args.dsc) + "_n_layers=" + str(args.n_layers) + "tau=" + str(args.tau)
@@ -336,18 +336,18 @@ if __name__ == '__main__':
             eval_test_ood_3 = ProxyEvaluator(data,data.train_user_list,data.test_ood_user_list_3,top_k=[20],\
                                 dump_dict=merge_user_list([data.train_user_list,data.valid_user_list,data.test_ood_user_list_1,data.test_ood_user_list_2]),pop_mask=pop_mask)
         elif(args.dataset == "kuairec_ood"):
-            eval_valid = ProxyEvaluator(data,data.train_user_list,data.valid_user_list,top_k=[20],pop_mask=pop_mask,dump_dict=merge_user_list([data.train_user_list,not_candidate_dict]))
+            eval_valid = ProxyEvaluator(data,data.train_user_list,data.valid_user_list,top_k=[20],dump_dict=merge_user_list([data.train_user_list,not_candidate_dict]),pop_mask=pop_mask)
             eval_test_ood_1 = ProxyEvaluator(data,data.train_user_list,data.test_ood_user_list_1,top_k=[20],\
-                                dump_dict=merge_user_list([data.train_user_list,data.valid_user_list,not_candidate_dict]))
+                                dump_dict=merge_user_list([data.train_user_list,data.valid_user_list,not_candidate_dict]),pop_mask=pop_mask)
             eval_test_ood_2 = ProxyEvaluator(data,data.train_user_list,data.test_ood_user_list_2,top_k=[20],\
-                                dump_dict=merge_user_list([data.train_user_list,data.valid_user_list,not_candidate_dict,data.test_ood_user_list_1]))
+                                dump_dict=merge_user_list([data.train_user_list,data.valid_user_list,not_candidate_dict,data.test_ood_user_list_1]),pop_mask=pop_mask)
             eval_test_ood_3 = ProxyEvaluator(data,data.train_user_list,data.test_ood_user_list_3,top_k=[20],\
-                                dump_dict=merge_user_list([data.train_user_list,data.valid_user_list,not_candidate_dict,data.test_ood_user_list_1,data.test_ood_user_list_2]))
+                                dump_dict=merge_user_list([data.train_user_list,data.valid_user_list,not_candidate_dict,data.test_ood_user_list_1,data.test_ood_user_list_2]),pop_mask=pop_mask)
         else:
             if "kuairec" in args.dataset:
-                eval_valid = ProxyEvaluator(data,data.train_user_list,data.valid_user_list,top_k=[20],dump_dict=merge_user_list([data.train_user_list,not_candidate_dict]))
-                eval_test_ood = ProxyEvaluator(data,data.train_user_list,data.test_ood_user_list,top_k=[20],dump_dict=merge_user_list([data.train_user_list,data.valid_user_list,data.test_id_user_list,not_candidate_dict]))
-                eval_test_id = ProxyEvaluator(data,data.train_user_list,data.test_id_user_list,top_k=[20],dump_dict=merge_user_list([data.train_user_list,data.valid_user_list,data.test_ood_user_list,not_candidate_dict]))
+                eval_valid = ProxyEvaluator(data,data.train_user_list,data.valid_user_list,top_k=[20],dump_dict=merge_user_list([data.train_user_list,not_candidate_dict]),pop_mask=pop_mask)
+                eval_test_ood = ProxyEvaluator(data,data.train_user_list,data.test_ood_user_list,top_k=[20],dump_dict=merge_user_list([data.train_user_list,data.valid_user_list,data.test_id_user_list,not_candidate_dict]),pop_mask=pop_mask)
+                eval_test_id = ProxyEvaluator(data,data.train_user_list,data.test_id_user_list,top_k=[20],dump_dict=merge_user_list([data.train_user_list,data.valid_user_list,data.test_ood_user_list,not_candidate_dict]),pop_mask=pop_mask)
             else:
                 eval_valid = ProxyEvaluator(data,data.train_user_list,data.valid_user_list,top_k=[20],pop_mask=pop_mask)
                 eval_test_ood = ProxyEvaluator(data,data.train_user_list,data.test_ood_user_list,top_k=[20],dump_dict=merge_user_list([data.train_user_list,data.valid_user_list,data.test_id_user_list]),pop_mask=pop_mask)
@@ -362,7 +362,7 @@ if __name__ == '__main__':
         eval_names=["valid","test_id", "test_ood" ]
 
 
-    model = AdvDRO(args,data)
+    model = AdvInfoNCE(args,data)
 
     model.cuda(device)
 
@@ -461,10 +461,7 @@ if __name__ == '__main__':
                 for i in range(3):
                     for j in range(3):
                         idx = idxs[i*3+j]
-                        if(args.adv_version == 'r'):
-                            axes[i, j].bar(np.arange(0,len(p_negative_sorted[idx]),1), 1/p_negative_sorted[idx], align='center', alpha=0.5)
-                        else:
-                            axes[i, j].bar(np.arange(0,len(p_negative_sorted[idx]),1), p_negative_sorted[idx], align='center', alpha=0.5)
+                        axes[i, j].bar(np.arange(0,len(p_negative_sorted[idx]),1), p_negative_sorted[idx], align='center', alpha=0.5)
                 # save
                 
                 # save_fig_path = "content/distribution/" + load_path.split("/")[-1] + "/"
@@ -474,10 +471,8 @@ if __name__ == '__main__':
 
                 #@ 平均意义下的
                 mean_p_negative = np.mean(p_negative_sorted, axis=0)
-                if(args.adv_version == 'r'):
-                    plt.bar(np.arange(0,len(mean_p_negative),1), 1/mean_p_negative, align='center', alpha=0.5)
-                else:
-                    plt.bar(np.arange(0,len(mean_p_negative),1), mean_p_negative, align='center', alpha=0.5)
+
+                plt.bar(np.arange(0,len(mean_p_negative),1), mean_p_negative, align='center', alpha=0.5)
                 plt.title("mean_p_negative_sorted ")
                 # save
                 plt.savefig(save_fig_path + f"/{current_eta}_mean_p_negative_sorted.png")
@@ -561,7 +556,7 @@ if __name__ == '__main__':
             epoch, t2 - t1, running_loss / num_batches,
             running_mf_loss / num_batches, running_reg_loss / num_batches)
 
-        #@ 表现写入txt文件
+        #@ report the performance
         with open(base_path + 'stats_{}.txt'.format(args.saveID),'a') as f:
             f.write(perf_str+"\n")
 

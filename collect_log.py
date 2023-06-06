@@ -4,10 +4,10 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import os
 # %%
-# file_dir = "weights/coat/AdvDRO-LGN/4_28_AdvDRO_mlp_pknm_coat_tau_0.75_n_layers_2_lr_0.0005_i_10_ae_1_al_0.005_w_0_eta_70_batch_1024_neg_64_patience_30_k_neg_64.0stats_.txt"
-# file_dir = "weights/coat/AdvDRO-LGN/4_28_AdvDRO_mlp_pknm_coat_tau_0.75_n_layers_2_lr_0.0005_i_10_ae_1_al_0.005_w_0_eta_35_batch_1024_neg_64_patience_30_k_neg_64.0stats_.txt"
-# file_dir = "weights/tencent.new/AdvDRO/2_20_AdvDRO_i_5_ae_2_al_5e_5_eta_6_n_layers=0tau=0.1stats_.txt"
-# file_dir = "weights/yahoo.new/AdvDRO/4_26_sota_AdvDRO_mlp_pknm_yahoo.new_tau_0.28_n_layers_0_lr_0.0005_i_15_ae_1_al_0.0001_w_10_eta_15_batch_1024_neg_128_patience_10_k_neg_64.0stats_.txt"
+# file_dir = "weights/coat/AdvInfoNCE-LGN/4_28_AdvInfoNCE_mlp_pknm_coat_tau_0.75_n_layers_2_lr_0.0005_i_10_ae_1_al_0.005_w_0_eta_70_batch_1024_neg_64_patience_30_k_neg_64.0stats_.txt"
+# file_dir = "weights/coat/AdvInfoNCE-LGN/4_28_AdvInfoNCE_mlp_pknm_coat_tau_0.75_n_layers_2_lr_0.0005_i_10_ae_1_al_0.005_w_0_eta_35_batch_1024_neg_64_patience_30_k_neg_64.0stats_.txt"
+# file_dir = "weights/tencent.new/AdvInfoNCE/2_20_AdvInfoNCE_i_5_ae_2_al_5e_5_eta_6_n_layers=0tau=0.1stats_.txt"
+# file_dir = "weights/yahoo.new/AdvInfoNCE/4_26_sota_AdvInfoNCE_mlp_pknm_yahoo.new_tau_0.28_n_layers_0_lr_0.0005_i_15_ae_1_al_0.0001_w_10_eta_15_batch_1024_neg_128_patience_10_k_neg_64.0stats_.txt"
 # %%
 def read_log(file_dir, show=False):
     # 逐行读取file_dir文件, 只保留
@@ -69,8 +69,8 @@ def read_log(file_dir, show=False):
     result.to_csv(save_path, index=False)
 
 # %%
-# file_dir = "weights/yahoo.new/AdvDRO-LGN/4_30_r_ns_64_sota_r_AdvDRO_mlp_pknm_yahoo.new_tau_0.28_n_layers_2_lr_0.0005_i_10_ae_1_al_0.0001_w_0_eta_15_batch_1024_neg_64_patience_10_k_neg_64.0stats_.txt"
-# file_dir = "weights/kuairec_ood/AdvDRO-LGN/4_29_v1_AdvDRO_embed_pknm_kuairec_ood_tau_0.5_n_layers_2_lr_1e-06_i_2_ae_1_al_5e-05_w_0_eta_40_batch_2048_neg_64_patience_10_k_neg_32.0stats_.txt"
+# file_dir = "weights/yahoo.new/AdvInfoNCE-LGN/4_30_r_ns_64_sota_r_AdvInfoNCE_mlp_pknm_yahoo.new_tau_0.28_n_layers_2_lr_0.0005_i_10_ae_1_al_0.0001_w_0_eta_15_batch_1024_neg_64_patience_10_k_neg_64.0stats_.txt"
+# file_dir = "weights/kuairec_ood/AdvInfoNCE-LGN/4_29_v1_AdvInfoNCE_embed_pknm_kuairec_ood_tau_0.5_n_layers_2_lr_1e-06_i_2_ae_1_al_5e-05_w_0_eta_40_batch_2048_neg_64_patience_10_k_neg_32.0stats_.txt"
 # read_log(file_dir, True)
 # %%
 # from reckit import randint_choice

@@ -99,7 +99,7 @@ def parse_args():
 
     parser.add_argument('--neg_sample',type=int,default=128)
 
-    #AdvDRO
+    #AdvInfoNCE
     parser.add_argument('--adv_interval',type=int,default=5,
                         help='the interval of adversarial training')
     parser.add_argument('--adv_epochs',type=int,default=1,
@@ -112,8 +112,6 @@ def parse_args():
                         help='k_neg for negative sampling')
     parser.add_argument('--eta_epochs', type=int, default=7,
                         help='epochs for eta, control the disturbance of adv training')
-    parser.add_argument('--adv_version', type=str, default='pknm',
-                        help='adv type, r for reverse, s for simple, n for normal, pn for normal with positive')
     parser.add_argument('--model_version', type=str, default='embed',
                         help='model type, mlp or embed')
     parser.add_argument('--w_embed_size',type=int,default=64,

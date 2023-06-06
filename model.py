@@ -748,14 +748,9 @@ class INFONCE(LGN):
         neg_ratings = torch.matmul(torch.unsqueeze(users_emb, 1), 
                                        neg_emb.permute(0, 2, 1)).squeeze(dim=1)
 
-        
-
         numerator = torch.exp(pos_ratings / self.tau)
 
-        denominator = numerator + torch.sum(torch.exp(neg_ratings / self.tau), dim = 1) # ssm
-        # denominator = numerator + 64*torch.sum(torch.exp(neg_ratings / self.tau), dim = 1) # ssm+K
-        # rand_weight = torch.rand(self.batch_size, self.neg_sample).cuda(self.device)
-        # denominator = numerator + 128*torch.sum(torch.exp(neg_ratings / self.tau)*rand_weight, dim = 1) # ssm+K+rand
+        denominator = numerator + torch.sum(torch.exp(neg_ratings / self.tau), dim = 1)
         
         ssm_loss = torch.mean(torch.negative(torch.log(numerator/denominator)))
 
@@ -809,17 +804,16 @@ class INFONCE_linear(LGN):
 
         return ssm_loss, reg_loss
 
-class AdvDRO(LGN):
+class AdvInfoNCE(LGN):
     def __init__(self, args, data):
         super().__init__(args, data)
         self.tau = args.tau
         self.k_neg = args.k_neg
         self.w_emb_dim = args.w_embed_size
         self.neg_sample =  args.neg_sample if args.neg_sample!=-1 else self.batch_size-1
-        self.adv_version = args.adv_version
         self.model_version = args.model_version
 
-        if(self.model_version == "mlp"):
+        if(self.model_version == "mlp"): # MLP version
             self.w_emb_dim = 4
             self.u_mlp = nn.Sequential(
                 nn.Linear(self.emb_dim, self.w_emb_dim),
@@ -827,7 +821,7 @@ class AdvDRO(LGN):
             self.i_mlp = nn.Sequential(
                 nn.Linear(self.emb_dim, self.w_emb_dim),
                 nn.ReLU())
-        else:
+        else: # Embedding version
             self.embed_user_p = nn.Embedding(self.n_users, self.w_emb_dim)
             self.embed_item_p = nn.Embedding(self.n_items, self.w_emb_dim)
             nn.init.xavier_normal_(self.embed_user_p.weight)
@@ -858,12 +852,12 @@ class AdvDRO(LGN):
         s_negative = torch.matmul(torch.unsqueeze(users_p_emb, 1), 
                                     neg_p_emb.permute(0, 2, 1)).squeeze(dim=1)
 
-        users_p_emb = F.normalize(users_p_emb, dim = -1)
-        neg_p_emb = F.normalize(neg_p_emb, dim = -1)
+        # users_p_emb = F.normalize(users_p_emb, dim = -1)
+        # neg_p_emb = F.normalize(neg_p_emb, dim = -1)
 
         p_negative = torch.softmax(s_negative, dim=1) # score for negative samples
-        
-        
+
+
         # main branch
         # use cosine similarity
         if(self.train_norm):
@@ -876,13 +870,8 @@ class AdvDRO(LGN):
                                        neg_emb.permute(0, 2, 1)).squeeze(dim=1)
 
         numerator = torch.exp(pos_ratings / self.tau)
-        #@ 加入p_negative
-        if(self.adv_version == 's'):
-            denominator = numerator + torch.sum(torch.exp(neg_ratings / self.tau), dim = 1) #@ Simple SSM version
-        elif(self.adv_version == 'r'):
-            denominator = numerator + torch.sum(torch.exp(neg_ratings / self.tau)/p_negative, dim = 1) #@ IPS 
-        elif(self.adv_version == 'pknm'):   
-            denominator = numerator + self.k_neg * int(p_negative.shape[1]) * torch.sum(torch.exp(neg_ratings / self.tau)*p_negative, dim = 1) #@ multiply with N
+        
+        denominator = numerator + self.k_neg * int(p_negative.shape[1]) * torch.sum(torch.exp(neg_ratings / self.tau)*p_negative, dim = 1) #@ multiply with N
 
         ssm_loss = torch.mean(torch.negative(torch.log(numerator/denominator)))
 
@@ -894,7 +883,7 @@ class AdvDRO(LGN):
         reg_neg_prob = reg_neg_prob / self.batch_size
         reg_loss_prob = self.decay * regularizer
 
-        #@ calculate eta
+        #@ calculate eta (KL divergence)
         kl_d = (p_negative*torch.log(p_negative/(1/self.neg_sample))).cpu().detach().numpy()
         kl_d = np.sum(kl_d, axis=1)
         # print(kl_d.shape, type(kl_d))
@@ -951,7 +940,7 @@ class AdvDRO(LGN):
             items = F.normalize(items, dim = -1)
 
         items = torch.transpose(items, 0, 1)
-        rate_batch = torch.matmul(users, items) # 返回一个u*i的矩阵就行 290*300 for coat 返回值需要是u*i就行
+        rate_batch = torch.matmul(users, items) # return score U*I
 
         return rate_batch.cpu().detach().numpy()
 

@@ -18,7 +18,7 @@ import os
 from data import Data
 from parse import parse_args
 # need change 1
-from model import CausE, IPS, LGN, MACR, INFONCE, INFONCE_linear, AdvDRO, SAMREG, BC_LOSS, SimpleX, SGL, NCL, XSimGCL, PID, NBC_LOSS
+from model import CausE, IPS, LGN, MACR, INFONCE, INFONCE_linear, AdvInfoNCE, SAMREG, BC_LOSS, SimpleX, SGL, NCL, XSimGCL, PID, NBC_LOSS
 from torch.utils.data import Dataset, DataLoader
 from collect_log import read_log
 import torch.nn.functional as F
@@ -26,9 +26,9 @@ import torch.nn.functional as F
 
 def merge_user_list(user_lists):
     out = collections.defaultdict(list)
-    # 循环遍历每个用户列表
+    # Loop over each user list
     for user_list in user_lists:
-        # 循环遍历每个用户
+        # Loop over each user in the user list
         for key, item in user_list.items():
             out[key] = out[key] + item
     return out
@@ -536,7 +536,7 @@ if __name__ == '__main__':
         base_path = './weights/{}/{}/{}'.format(args.dataset, args.modeltype, saveID)
 
     checkpoint_buffer=[]
-    #@ 训练margin的epoch
+    #@ epochs for training the margin for BC Loss
     freeze_epoch=args.freeze_epoch if (args.modeltype=="BC_LOSS") else 0
     ensureDir(base_path)
 
@@ -544,7 +544,7 @@ if __name__ == '__main__':
     with open(base_path + 'stats_{}.txt'.format(args.saveID),'a') as f:
             f.write(perf_str+"\n")
 
-    #@ 计算popularity
+    #@ calculate the popularity (not used in the paper)
     p_item = np.array([len(data.train_item_list[u]) if u in data.train_item_list else 0 for u in range(data.n_items)])
     p_user = np.array([len(data.train_user_list[u]) if u in data.train_user_list else 0 for u in range(data.n_users)])
     m_user=np.argmax(p_user)
@@ -570,10 +570,11 @@ if __name__ == '__main__':
             if item not in pop_dict:
                 pop_dict[item]=0
             pop_dict[item]+=1
-    # pop_dict的key是item，value是item的popularity
+    # The key of pop_dict is item, and the value is the popularity of item
     
     sort_pop=sorted(pop_dict.items(), key=lambda item: item[1],reverse=True)
-    # sort_pop是一个list，list中的元素是tuple，tuple的第一个元素是item，第二个元素是item的popularity
+
+    # sort_pop is a list, the elements in the list are tuples, the first element of the tuple is item, and the second element is the popularity of the item
     pop_mask=[item[0] for item in sort_pop[:20]]
     print(pop_mask)
 
@@ -622,23 +623,23 @@ if __name__ == '__main__':
             eval_test_ood_3 = ProxyEvaluator(data,data.train_user_list,data.test_ood_user_list_3,top_k=[20],\
                                 dump_dict=merge_user_list([data.train_user_list,data.valid_user_list,data.test_ood_user_list_1,data.test_ood_user_list_2]),pop_mask=pop_mask)
         elif(args.dataset == "kuairec_ood"):
-            eval_valid = ProxyEvaluator(data,data.train_user_list,data.valid_user_list,top_k=[20],pop_mask=pop_mask,dump_dict=merge_user_list([data.train_user_list,not_candidate_dict]))
+            eval_valid = ProxyEvaluator(data,data.train_user_list,data.valid_user_list,top_k=[20],dump_dict=merge_user_list([data.train_user_list,not_candidate_dict]),pop_mask=pop_mask)
             eval_test_ood_1 = ProxyEvaluator(data,data.train_user_list,data.test_ood_user_list_1,top_k=[20],\
-                                dump_dict=merge_user_list([data.train_user_list,data.valid_user_list,not_candidate_dict]))
+                                dump_dict=merge_user_list([data.train_user_list,data.valid_user_list,not_candidate_dict]),pop_mask=pop_mask)
             eval_test_ood_2 = ProxyEvaluator(data,data.train_user_list,data.test_ood_user_list_2,top_k=[20],\
-                                dump_dict=merge_user_list([data.train_user_list,data.valid_user_list,not_candidate_dict,data.test_ood_user_list_1]))
+                                dump_dict=merge_user_list([data.train_user_list,data.valid_user_list,not_candidate_dict,data.test_ood_user_list_1]),pop_mask=pop_mask)
             eval_test_ood_3 = ProxyEvaluator(data,data.train_user_list,data.test_ood_user_list_3,top_k=[20],\
-                                dump_dict=merge_user_list([data.train_user_list,data.valid_user_list,not_candidate_dict,data.test_ood_user_list_1,data.test_ood_user_list_2]))
+                                dump_dict=merge_user_list([data.train_user_list,data.valid_user_list,not_candidate_dict,data.test_ood_user_list_1,data.test_ood_user_list_2]),pop_mask=pop_mask)
         else:
             if "kuairec" in args.dataset:
-                eval_valid = ProxyEvaluator(data,data.train_user_list,data.valid_user_list,top_k=[20],dump_dict=merge_user_list([data.train_user_list,not_candidate_dict]))
-                eval_test_ood = ProxyEvaluator(data,data.train_user_list,data.test_ood_user_list,top_k=[20],dump_dict=merge_user_list([data.train_user_list,data.valid_user_list,data.test_id_user_list,not_candidate_dict]))
-                eval_test_id = ProxyEvaluator(data,data.train_user_list,data.test_id_user_list,top_k=[20],dump_dict=merge_user_list([data.train_user_list,data.valid_user_list,data.test_ood_user_list,not_candidate_dict]))
+                eval_valid = ProxyEvaluator(data,data.train_user_list,data.valid_user_list,top_k=[20],dump_dict=merge_user_list([data.train_user_list,not_candidate_dict]),pop_mask=pop_mask)
+                eval_test_ood = ProxyEvaluator(data,data.train_user_list,data.test_ood_user_list,top_k=[20],dump_dict=merge_user_list([data.train_user_list,data.valid_user_list,data.test_id_user_list,not_candidate_dict]),pop_mask=pop_mask)
+                eval_test_id = ProxyEvaluator(data,data.train_user_list,data.test_id_user_list,top_k=[20],dump_dict=merge_user_list([data.train_user_list,data.valid_user_list,data.test_ood_user_list,not_candidate_dict]),pop_mask=pop_mask)
             else:
                 eval_valid = ProxyEvaluator(data,data.train_user_list,data.valid_user_list,top_k=[20],pop_mask=pop_mask)
                 eval_test_ood = ProxyEvaluator(data,data.train_user_list,data.test_ood_user_list,top_k=[20],dump_dict=merge_user_list([data.train_user_list,data.valid_user_list,data.test_id_user_list]),pop_mask=pop_mask)
                 eval_test_id = ProxyEvaluator(data,data.train_user_list,data.test_id_user_list,top_k=[20],dump_dict=merge_user_list([data.train_user_list,data.valid_user_list,data.test_ood_user_list]),pop_mask=pop_mask)
-
+        
     if(args.dataset == "tencent_synthetic" or args.dataset == "kuairec_ood"):
         evaluators=[eval_valid, eval_test_ood_1, eval_test_ood_2, eval_test_ood_3]
         eval_names=["valid","test_ood_1", "test_ood_2", "test_ood_3"]
@@ -680,7 +681,7 @@ if __name__ == '__main__':
 
     model.cuda(device)
 
-    #@ 读取模型
+    #@ load the model
     model, start_epoch = restore_checkpoint(model, base_path, device)
 
     if args.test_only:
@@ -869,7 +870,7 @@ if __name__ == '__main__':
             perf_str = 'Epoch %d [%.1fs]: train==[%.5f=%.5f + %.5f + %.5f]' % (
                 epoch, t2 - t1, running_loss / num_batches,
                 running_loss1 / num_batches, running_loss2 / num_batches, running_reg_loss / num_batches)
-                #@ 1是main branch 2是popularity branch 3是reg branch
+                #@ 1 for main branch 2 for popularity branch reg for reg branch
 
         elif args.modeltype == "XSimGCL" or args.modeltype == "SGL":
             perf_str = 'Epoch %d [%.1fs]: train==[%.5f=%.5f + %.5f + %.5f]' % (
