@@ -81,6 +81,8 @@ python main.py --train_norm --pred_norm --modeltype INFONCE --dataset tencent_sy
 
 - tensorflow == 1.14
 
+- reckit == 0.2.4
+
 
 
 
