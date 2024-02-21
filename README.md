@@ -83,7 +83,16 @@ python main.py --train_norm --pred_norm --modeltype INFONCE --dataset tencent_sy
 
 - reckit == 0.2.4
 
+## Reference
+If you want to use our codes and datasets in your research, please cite:
 
-
+```
+@article{AdvInfoNCE,
+  title={Empowering Collaborative Filtering with Principled Adversarial Contrastive Loss},
+  author={Zhang, An and Sheng, Leheng and Cai, Zhibo and Wang, Xiang and Chua, Tat-Seng},
+  journal={Advances in Neural Information Processing Systems},
+  volume={36},
+  year={2024}
+}
 
 
