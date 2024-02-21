@@ -91,7 +91,7 @@ If you want to use our codes and datasets in your research, please cite:
   title={Empowering Collaborative Filtering with Principled Adversarial Contrastive Loss},
   author={Zhang, An and Sheng, Leheng and Cai, Zhibo and Wang, Xiang and Chua, Tat-Seng},
   booktitle={{NeurIPS}},
-  year={2024}
+  year={2023}
 }
 ```
 
